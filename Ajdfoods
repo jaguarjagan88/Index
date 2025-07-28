@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="default">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ajdfooodsnmalts - Homey Goods with Care</title>
+  <style>
+    :root {
+      --primary-color: #00A3D9;
+      --background-color: #f0f8ff;
+      --font-color: #222222;
+      --accent-color: #326872;
+      --glow-color: #56FFFF;
+    }
+    [data-theme="dark"] {
+      --background-color: #0a0a21;
+      --font-color: #e0e0e0;
+      --primary-color: #0CA686;
+      --accent-color: #00FFFF;
+      --glow-color: #33fff3;
+    }
+    [data-theme="light"] {
+      --background-color: #ffffff;
+      --font-color: #222222;
+      --primary-color: #00A3D9;
+      --accent-color: #4db6ac;
+      --glow-color: #56FFFF;
+    }
+    body {
+      margin: 0; padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--background-color);
+      color: var(--font-color);
+      transition: background-color 0.4s, color 0.4s;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem 1.5rem;
+      background-color: var(--primary-color);
+      box-shadow: 0 0 10px var(--glow-color);
+      position: sticky;
+      top: 0; z-index: 50;
+    }
+    .branding {
+      user-select: none;
+    }
+    .branding h1 {
+      margin: 0; font-weight: 900;
+      color: var(--font-color);
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px var(--glow-color);
+    }
+    .branding p {
+      margin: 0; font-size: 0.9rem;
+      font-style: italic;
+      color: var(--font-color);
+      opacity: 0.8;
+    }
+    #menu-toggle {
+      cursor: pointer;
+      width: 35px; height: 30px;
+      position: relative;
+      display: inline-block;
+    }
+    #menu-toggle span {
+      background: var(--font-color);
+      display: block;
+      position: absolute;
+      height: 4px;
+      width: 100%;
+      border-radius: 2px;
+      opacity: 1;
+      left: 0; transition: 0.25s ease-in-out;
+    }
+    #menu-toggle span:nth-child(1) { top: 0px; }
+    #menu-toggle span:nth-child(2) { top: 13px; }
+    #menu-toggle span:nth-child(3) { top: 26px; }
+    #menu-toggle.active span:nth-child(1) {
+      top: 13px; transform: rotate(45deg);
+    }
+    #menu-toggle.active span:nth-child(2) {
+      opacity: 0;
+    }
+    #menu-toggle.active span:nth-child(3) {
+      top: 13px; transform: rotate(-45deg);
+    }
+    #side-nav {
+      position: fixed;
+      top: 0; right: 0;
+      height: 100vh;
+      width: 280px;
+      background: transparent;
+      backdrop-filter: blur(10px);
+      box-shadow:
+        inset 0 0 15px rgba(0,163,217,0.4),
+        0 0 25px rgba(0,163,217,0.8);
+      border-left: 3px solid var(--primary-color);
+      padding: 2rem 1rem 1rem;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      color: var(--font-color);
+    }
+    #side-nav.open {
+      transform: translateX(0);
+    }
+    #side-nav h3 {
+      margin-top: 0;
+      margin-bottom: 2rem;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--primary-color);
+      text-shadow: 0 0 8px var(--glow-color);
+      text-align: center;
+    }
+    #side-nav nav {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    #side-nav nav a {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-size: 1.15rem;
+      color: var(--font-color);
+      text-decoration: none;
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      transition: background-color 0.25s ease;
+    }
+    #side-nav nav a:hover {
+      background-color: var(--primary-color);
+      color: #fff;
+      text-shadow: 0 0 5px var(--glow-color);
+    }
+    .nav-icon {
+      display: inline-block;
+      width: 24px; height: 24px;
+      background-color: var(--primary-color);
+      border-radius: 4px;
+      box-shadow: 0 0 6px var(--glow-color);
+    }
+    main {
+      max-width: 1200px;
+      margin: 2rem auto 4rem;
+      padding: 0 1rem;
+    }
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+      gap: 1.8rem;
+    }
+    .product-card {
+      box-shadow:
+        0 0 12px var(--primary-color),
+        inset 0 0 18px var(--glow-color);
+      border-radius: 14px;
+      padding: 1.2rem;
+      background: var(--background-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.3s ease;
+    }
+    .product-card:hover {
+      transform: translateY(-8px);
+      box-shadow:
+        0 0 30px var(--glow-color),
+        inset 0 0 30px var(--accent-color);
+    }
+    .product-card img {
+      width: 140px;
+      height: 140px;
+      object-fit: contain;
+      margin-bottom: 0.8rem;
+    }
+    .product-card h4 {
+      margin: 0.5rem 0 0.2rem;
+      color: var(--primary-color);
+      font-weight: 800;
+    }
+    .product-card p {
+      font-size: 0.9rem;
+      min-height: 40px;
+      text-align: center;
+      color: var(--font-color);
+      margin-bottom: 0.8rem;
+    }
+    .price {
+      font-weight: 700;
+      font-size: 1.15rem;
+      margin-bottom: 0.8rem;
+    }
+    .card-buttons {
+      display: flex;
+      gap: 0.8rem;
+    }
+    .card-buttons button {
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      border: none;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      box-shadow: 0 0 14px var(--primary-color);
+      background-color: var(--primary-color);
+      color: var(--font-color);
+      transition: box-shadow 0.3s ease;
+    }
+    .card-buttons button:hover {
+      box-shadow: 0 0 28px var(--glow-color);
+    }
+    .card-buttons .fav-btn {
+      background-color: transparent;
+      border: 2px solid var(--primary-color);
+      color: var(--primary-color);
+      padding: 0.5rem 0.8rem;
+      font-size: 1.25rem;
+      line-height: 1;
+      border-radius: 12px;
+      box-shadow: none;
+    }
+    .card-buttons .fav-btn.fav-active {
+      background-color: var(--accent-color);
+      color: #000;
+      box-shadow: 0 0 28px var(--accent-color);
+    }
+    #page-content {
+      margin-top: 2rem;
+    }
+    #breadcrumbs {
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      color: var(--primary-color);
+      cursor: pointer;
+    }
+    #breadcrumbs span {
+      text-decoration: underline;
+    }
+    #cart-sidebar {
+      position: fixed;
+      top: 0; right: 0;
+      width: 320px;
+      height: 100vh;
+      background: var(--background-color);
+      box-shadow: -3px 0 15px rgba(0,0,0,0.3);
+      border-left: 3px solid var(--primary-color);
+      padding: 1rem;
+      transform: translateX(100%);
+      transition: transform 0.3s ease-in-out;
+      display: flex;
+      flex-direction: column;
+      z-index: 120;
+    }
+    #cart-sidebar.open {
+      transform: translateX(0);
+    }
+    #cart-sidebar h3 {
+      margin-top: 0;
+      text-align: center;
+      color: var(--primary-color);
+      text-shadow: 0 0 6px var(--glow-color);
+    }
+    #cart-items {
+      flex-grow: 1;
+      overflow-y: auto;
+      margin: 1rem 0;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--accent-color);
+    }
+    .cart-item span {
+      flex: 1;
+    }
+    .cart-item .qty {
+      width: 40px;
+      text-align: center;
+      border: 1px solid var(--primary-color);
+      border-radius: 4px;
+      background: var(--background-color);
+      color: var(--font-color);
+      outline: none;
+    }
+    .cart-item button.remove-btn {
+      background: transparent;
+      border: none;
+      color: crimson;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    #cart-total {
+      font-weight: 800;
+      font-size: 1.2rem;
+      text-align: right;
+      margin: 1rem 0;
+    }
+    #checkout-btn {
+      background: var(--primary-color);
+      color: var(--font-color);
+      border: none;
+      padding: 0.8rem;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 0 25px var(--glow-color);
+      transition: box-shadow 0.3s ease;
+    }
+    #checkout-btn:disabled {
+      background: #888;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+    #checkout-btn:hover:not(:disabled) {
+      box-shadow: 0 0 40px var(--accent-color);
+    }
+    #checkout-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 130;
+    }
+    #checkout-modal.open {
+      display: flex;
+    }
+    #checkout-form {
+      background: var(--background-color);
+      padding: 2rem;
+      width: 320px;
+      border-radius: 12px;
+      box-shadow:
+        0 0 20px var(--glow-color),
+        inset 0 0 15px var(--accent-color);
+      color: var(--font-color);
+    }
+    #checkout-form h3 {
+      text-align: center;
+      margin-top: 0;
+      color: var(--primary-color);
+      text-shadow: 0 0 8px var(--glow-color);
+    }
+    #checkout-form label {
+      display: block;
+      margin-bottom: 0.3rem;
+      margin-top: 1rem;
+    }
+    #checkout-form input, #checkout-form select {
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 6px;
+      border: 2px solid var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 5px var(--glow-color);
+      background: var(--background-color);
+      color: var(--font-color);
+    }
+    #checkout-form button {
+      margin-top: 1.5rem;
+      background: var(--primary-color);
+      color: var(--font-color);
+      border: none;
+      padding: 0.75rem;
+      width: 100%;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 0 15px var(--glow-color);
+      transition: box-shadow 0.3s ease;
+    }
+    #checkout-form button:hover {
+      box-shadow: 0 0 30px var(--accent-color);
+    }
+    #checkout-form button.cancel-btn {
+      background: #ccc;
+      color: #000;
+      margin-top: 0.5rem;
+    }
+    #login-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 150;
+    }
+    #login-modal.open {
+      display: flex;
+    }
+    #login-form {
+      background: var(--background-color);
+      padding: 2rem;
+      border-radius: 14px;
+      box-shadow:
+        0 0 20px var(--glow-color),
+        inset 0 0 15px var(--accent-color);
+      width: 320px;
+      color: var(--font-color);
+    }
+    #login-form h3 {
+      margin-top: 0;
+      color: var(--primary-color);
+      text-shadow: 0 0 8px var(--glow-color);
+      text-align: center;
+    }
+    #login-form label {
+      display: block;
+      margin-top: 1rem;
+      margin-bottom: 0.3rem;
+    }
+    #login-form input {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 2px solid var(--primary-color);
+      background: var(--background-color);
+      color: var(--font-color);
+      box-shadow: 0 0 5px var(--glow-color);
+      outline: none;
+    }
+    #login-form button {
+      margin-top: 1.5rem;
+      background: var(--primary-color);
+      color: var(--font-color);
+      border: none;
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-weight: 700;
+      width: 100%;
+      cursor: pointer;
+      box-shadow: 0 0 15px var(--glow-color);
+    }
+    #login-form button:hover {
+      box-shadow: 0 0 30px var(--accent-color);
+    }
+    @media (max-width: 768px) {
+      #side-nav { width: 80vw; }
+      main {
+        margin: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="branding" aria-label="Company Title">
+    <h1>ajdfooodsnmalts</h1>
+    <p>homey goods with care</p>
+  </div>
+  <div id="menu-toggle" aria-label="Toggle Menu" role="button" tabindex="0" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </div>
+</header>
+<aside id="side-nav" aria-label="Main Navigation" role="navigation" aria-hidden="true">
+  <h3>Menu</h3>
+  <nav>
+    <a href="#" class="nav-link" data-page="home" tabindex="0"><span class="nav-icon" aria-hidden="true"></span> Home</a>
+    <a href="#" class="nav-link" data-page="category" data-category="powder" tabindex="0"><span class="nav-icon" aria-hidden="true"></span> Powder Spice Mix</a>
+    <a href="#" class="nav-link" data-page="category" data-category="soup" tabindex="0"><span class="nav-icon" aria-hidden="true"></span> Soup Powder</a>
+    <a href="#" class="nav-link" data-page="category" data-category="millet" tabindex="0"><span class="nav-icon" aria-hidden="true"></span> Millet Mix</a>
+    <a href="#" class="nav-link" data-page="category" data-category="congee" tabindex="0"><span class="nav-icon" aria-hidden="true"></span> Congee</a>
+    <a href="#" class="nav-link" data-page="category" data-category="fruit" tabindex="0"><span class="nav-icon" aria-hidden="true"></span> Fruit Blend</a>
+    <a href="#" class="nav-link" data-page="category" data-category="health" tabindex="0"><span class="nav-icon" aria-hidden="true"></span> Health Mix</a>
+    <hr style="opacity:0.2; margin:1rem 0;">
+    <a href="#" class="nav-link" data-page="user-info" tabindex="0"><span class="nav-icon" aria-hidden="true"></span> User Info</a>
+    <a href="#" class="nav-link" data-page="orders" tabindex="0"><span class="nav-icon" aria-hidden="true"></span> View Orders</a>
+    <a href="#" class="nav-link" data-page="support" tabindex="0"><span class="nav-icon" aria-hidden="true"></span> Customer Support</a>
+    <a href="#" class="nav-link" data-page="settings" tabindex="0"><span class="nav-icon" aria-hidden="true"></span> Settings</a>
+    <a href="#" id="logout-btn" tabindex="0" style="color: crimson; font-weight: 700; display:none;">Logout</a>
+  </nav>
+  <div style="margin-top:1.5rem; text-align:center; font-size:0.9rem; color: var(--font-color);">
+    <label for="theme-select" style="display:block; margin-bottom: 0.3rem;">Theme:</label>
+    <select id="theme-select" aria-label="Select Theme" style="border-radius:6px; padding:0.3rem; width:90%;">
+      <option value="default">Default</option>
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+    </select>
+    <label for="font-color-select" style="display:block; margin:0.6rem 0 0.3rem;">Font Color:</label>
+    <select id="font-color-select" aria-label="Select Font Color" style="border-radius:6px; padding:0.3rem; width:90%;">
+      <option value="#222222" selected>Default</option>
+      <option value="#ffffff">White</option>
+      <option value="#00A3D9">Neon Blue</option>
+      <option value="#56FFFF">Turquoise</option>
+      <option value="#AA33FF">Purple</option>
+    </select>
+  </div>
+</aside>
+<main>
+  <div id="page-content" aria-live="polite" aria-atomic="true" tabindex="0"></div>
+</main>
+<aside id="cart-sidebar" aria-label="Shopping Cart">
+  <h3>Your Cart</h3>
+  <div id="cart-items" tabindex="0"></div>
+  <div id="cart-total" aria-live="polite">Total: ₹0</div>
+  <button id="checkout-btn" disabled>Checkout</button>
+</aside>
+<div id="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
+  <form id="checkout-form">
+    <h3 id="checkout-title">Checkout</h3>
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" required placeholder="Full Name" autocomplete="name" />
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required placeholder="you@example.com" autocomplete="email" />
+    <label for="address">Address</label>
+    <input type="text" id="address" name="address" required placeholder="Shipping Address" autocomplete="street-address"/>
+    <label for="payment">Payment Method</label>
+    <select id="payment" name="payment" required>
+      <option value="">Select</option>
+      <option value="stripe">Credit/Debit Card (Stripe)</option>
+      <option value="paypal">PayPal</option>
+      <option value="razorpay">Razorpay</option>
+    </select>
+    <button type="submit">Pay Now</button>
+    <button type="button" id="cancel-checkout" class="cancel-btn">Cancel</button>
+  </form>
+</div>
+<div id="login-modal" role="dialog" aria-modal="true" aria-labelledby="login-title">
+  <form id="login-form">
+    <h3 id="login-title">Log In / Sign Up</h3>
+    <label for="login-name">Name</label>
+    <input type="text" id="login-name" name="login-name" required placeholder="Your Name" autocomplete="name" />
+    <label for="login-email">Email</label>
+    <input type="email" id="login-email" name="login-email" required placeholder="you@example.com" autocomplete="email" />
+    <button type="submit">Log In</button>
+  </form>
+</div>
+<script>
+  // Product data
+  const products = [
+    { id: 1, name: "Powder Spice Mix", category: "powder", description: "Flavorful premium spices.", price: 250, image: "https://cdn-icons-png.flaticon.com/512/1046/1046784.png" },
+    { id: 2, name: "Soup Powder", category: "soup", description: "Instant rich soup powder.", price: 150, image: "https://cdn-icons-png.flaticon.com/512/1046/1046741.png" },
+    { id: 3, name: "Millet Mix", category: "millet", description: "Healthy millet blend.", price: 180, image: "https://cdn-icons-png.flaticon.com/512/1723/1723264.png" },
+    { id: 4, name: "Congee Mix", category: "congee", description: "Nutritious rice porridge.", price: 200, image: "https://cdn-icons-png.flaticon.com/512/1046/1046767.png" },
+    { id: 5, name: "Fruit Blend", category: "fruit", description: "Delectable dried fruits.", price: 300, image: "https://cdn-icons-png.flaticon.com/512/1046/1046753.png" },
+    { id: 6, name: "Health Mix", category: "health", description: "Power-packed health mix.", price: 350, image: "https://cdn-icons-png.flaticon.com/512/1047/1047013.png" }
+  ];
+  // State variables
+  let cart = {};
+  let favorites = new Set();
+  let loggedInUser = null;
+  const sideNav = document.getElementById('side-nav');
+  const menuToggle = document.getElementById('menu-toggle');
+  const pageContent = document.getElementById('page-content');
+  const cartSidebar = document.getElementById('cart-sidebar');
+  const cartItemsContainer = document.getElementById('cart-items');
+  const cartTotal = document.getElementById('cart-total');
+  const checkoutBtn = document.getElementById('checkout-btn');
+  const logoutBtn = document.getElementById('logout-btn');
+  const loginModal = document.getElementById('login-modal');
+  const loginForm = document.getElementById('login-form');
+  const themeSelect = document.getElementById('theme-select');
+  const fontColorSelect = document.getElementById('font-color-select');
+  const checkoutModal = document.getElementById('checkout-modal');
+  const checkoutForm = document.getElementById('checkout-form');
+  const cancelCheckoutBtn = document.getElementById('cancel-checkout');
+
+  window.onload = () => {
+    loadHome();
+    updateCartUI();
+  };
+
+  // Menu toggle logic
+  function toggleMenu() {
+    menuToggle.classList.toggle('active');
+    const isOpen = sideNav.classList.toggle('open');
+    sideNav.setAttribute('aria-hidden', !isOpen);
+    menuToggle.setAttribute('aria-expanded', isOpen);
+  }
+  menuToggle.addEventListener('click', toggleMenu);
+
+  // Navigation handling (category and others)
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', ev => {
+      ev.preventDefault();
+      toggleMenu();
+      const page = link.dataset.page;
+      if (page === 'home') {
+        loadHome();
+      } else if (page === 'category') {
+        loadCategory(link.dataset.category);
+      } else if (page === 'user-info') {
+        showUserInfo();
+      } else if (page === 'orders') {
+        showOrders();
+      } else if (page === 'support') {
+        showSupport();
+      } else if (page === 'settings') {
+        showSettings();
+      }
+    });
+  });
+
+  // Product grid builder
+  function loadHome() {
+    pageConten
